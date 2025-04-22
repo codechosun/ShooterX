@@ -4,19 +4,22 @@ using UnrealBuildTool;
 
 public class ShooterX : ModuleRules
 {
-    public ShooterX(ReadOnlyTargetRules Target) : base(Target)
-    {
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+	public ShooterX(ReadOnlyTargetRules Target) : base(Target)
+	{
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[]
-            { 
+		PublicDependencyModuleNames.AddRange(new string[]
+			{ 
 				// Initial Dependencies.
-				"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput"
-            }
-        );
+				"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
 
-        PrivateDependencyModuleNames.AddRange(new string[] { });
+				// Json Modules
+				"Json", "JsonUtilities",
+			}
+		);
 
-        PublicIncludePaths.AddRange(new string[] { "ShooterX" });
-    }
+		PrivateDependencyModuleNames.AddRange(new string[] { });
+
+		PublicIncludePaths.AddRange(new string[] { "ShooterX" });
+	}
 }
