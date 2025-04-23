@@ -12,14 +12,6 @@ class UCameraComponent;
 class USXInputConfig;
 class UInputMappingContext;
 
-UENUM(BlueprintType)
-enum class EViewMode : uint8
-{
-	None,
-	BackView,
-	End
-};
-
 /**
  *
  */
@@ -34,8 +26,6 @@ public:
 	ASXPlayerCharacter();
 
 	virtual void BeginPlay() override;
-
-	virtual void PossessedBy(AController* NewController) override;
 
 protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -62,16 +52,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
 	TObjectPtr<UInputMappingContext> PlayerCharacterInputMappingContext;
-
-#pragma endregion	
-
-#pragma region ViewMode
-
-public:
-	void SetViewMode(EViewMode InViewMode);
-
-protected:
-	EViewMode CurrentViewMode = EViewMode::None;
 
 #pragma endregion
 
