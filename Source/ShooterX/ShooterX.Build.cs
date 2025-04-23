@@ -15,6 +15,9 @@ public class ShooterX : ModuleRules
 
 				// Json Modules
 				"Json", "JsonUtilities",
+
+				// Input
+				"EnhancedInput",
 			}
 		);
 
