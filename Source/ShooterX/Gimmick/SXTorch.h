@@ -21,17 +21,20 @@ public:
     ASXTorch();
 
 private:
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SXTorch", Meta = (AllowPrivateAccess))
     TObjectPtr<UBoxComponent> BoxComponent;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SXTorch", Meta = (AllowPrivateAccess))
     TObjectPtr<UStaticMeshComponent> BodyStaticMeshComponent;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SXTorch", Meta = (AllowPrivateAccess))
     TObjectPtr<UPointLightComponent> PointLightComponent;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SXTorch", Meta = (AllowPrivateAccess))
     TObjectPtr<UParticleSystemComponent> ParticleSystemComponent;
+
+    UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "SXTorch", meta=(AllowPrivateAccess))
+    int32 ID;
 
 };
 
