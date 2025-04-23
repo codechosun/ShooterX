@@ -4,6 +4,8 @@
 #include "Character/SXCharacterBase.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Animation/SXAnimInstance.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 ASXCharacterBase::ASXCharacterBase()
 {

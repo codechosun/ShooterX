@@ -31,6 +31,6 @@ void ASXWeapon::HandleOnPickUp(ASXPlayerCharacter* InPickUpCharacter)
 
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	AttachToComponent(InPickUpCharacter->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
-	PickupComponent->SetSimulatePhysics(false);
 	SetActorEnableCollision(false);
+	PickupComponent->SetSimulatePhysics(false);
 }
