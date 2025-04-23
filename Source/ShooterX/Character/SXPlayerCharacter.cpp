@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Input/SXInputConfig.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ASXPlayerCharacter::ASXPlayerCharacter()
 {
@@ -36,6 +37,13 @@ void ASXPlayerCharacter::BeginPlay()
 	}
 }
 
+void ASXPlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	SetViewMode(EViewMode::BackView);
+}
+
 void ASXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -52,19 +60,82 @@ void ASXPlayerCharacter::InputMove(const FInputActionValue& InValue)
 {
 	FVector2D MovementVector = InValue.Get<FVector2D>();
 
-	AddMovementInput(GetActorForwardVector(), MovementVector.X);
-	AddMovementInput(GetActorRightVector(), MovementVector.Y);
+	switch (CurrentViewMode)
+	{
+	case EViewMode::BackView:
+	{ // Switch-Case 구문 내에서 Scope를 지정하면 해당 Scope 내에서 변수 선언이 가능해짐.
+		const FRotator ControlRotation = GetController()->GetControlRotation();
+		const FRotator ControlRotationYaw(0.f, ControlRotation.Yaw, 0.f);
 
-	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("X: %.3f, Y: %.3f"), MovementVector.X, MovementVector.Y));
+		const FVector ForwardVector = FRotationMatrix(ControlRotationYaw).GetUnitAxis(EAxis::X);
+		const FVector RightVector = FRotationMatrix(ControlRotationYaw).GetUnitAxis(EAxis::Y);
+
+		AddMovementInput(ForwardVector, MovementVector.X);
+		AddMovementInput(RightVector, MovementVector.Y);
+
+		break;
+	}
+	case EViewMode::None:
+	case EViewMode::End:
+	default:
+		AddMovementInput(GetActorForwardVector(), MovementVector.X);
+		AddMovementInput(GetActorRightVector(), MovementVector.Y);
+		break;
+	}
 }
 
 void ASXPlayerCharacter::InputLook(const FInputActionValue& InValue)
 {
-	if (IsValid(GetController()) == true)
-	{
-		FVector2D LookVector = InValue.Get<FVector2D>();
+	FVector2D LookVector = InValue.Get<FVector2D>();
 
+	switch (CurrentViewMode)
+	{
+	case EViewMode::BackView:
 		AddControllerYawInput(LookVector.X);
 		AddControllerPitchInput(LookVector.Y);
+		break;
+	case EViewMode::None:
+	case EViewMode::End:
+	default:
+		break;
+	}
+}
+
+void ASXPlayerCharacter::SetViewMode(EViewMode InViewMode)
+{
+	if (CurrentViewMode == InViewMode)
+	{
+		return;
+	}
+
+	CurrentViewMode = InViewMode;
+
+	switch (CurrentViewMode)
+	{
+	case EViewMode::BackView:
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationYaw = false;
+		bUseControllerRotationRoll = false;
+
+		SpringArmComponent->TargetArmLength = 400.f;
+		SpringArmComponent->SetRelativeRotation(FRotator::ZeroRotator);
+
+		SpringArmComponent->bUsePawnControlRotation = true;
+
+		SpringArmComponent->bInheritPitch = true;
+		SpringArmComponent->bInheritYaw = true;
+		SpringArmComponent->bInheritRoll = false;
+
+		SpringArmComponent->bDoCollisionTest = true;
+
+		GetCharacterMovement()->RotationRate = FRotator(0.f, 360.f, 0.f);
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->bUseControllerDesiredRotation = false;
+
+		break;
+	case EViewMode::None:
+	case EViewMode::End:
+	default:
+		break;
 	}
 }
