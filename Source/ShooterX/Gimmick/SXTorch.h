@@ -11,6 +11,7 @@ class UBoxComponent;
 class UStaticMeshComponent;
 class UPointLightComponent;
 class UParticleSystemComponent;
+class URotatingMovementComponent;
 
 UCLASS()
 class SHOOTERX_API ASXTorch : public AActor
@@ -19,6 +20,10 @@ class SHOOTERX_API ASXTorch : public AActor
 
 public:
     ASXTorch();
+
+    virtual void BeginPlay() override;
+
+    virtual void Tick(float DeltaSeconds) override;
 
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SXTorch", Meta = (AllowPrivateAccess))
@@ -35,6 +40,12 @@ private:
 
     UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "SXTorch", meta=(AllowPrivateAccess))
     int32 ID;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SXTorch", Meta = (AllowPrivateAccess))
+    float RotationSpeed;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SXTorch", meta = (AllowPrivateAccess))
+    TObjectPtr<URotatingMovementComponent> RotatingMovementComponent;
 
 };
 

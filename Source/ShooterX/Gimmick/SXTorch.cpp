@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
 
 // Sets default values
 ASXTorch::ASXTorch()
@@ -36,4 +37,21 @@ ASXTorch::ASXTorch()
     {
         ParticleSystemComponent->SetTemplate(ParticleTemplate.Object);
     }
+
+    RotatingMovementComponent = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("RotatingMovementComponent"));
+}
+
+void ASXTorch::BeginPlay()
+{
+    Super::BeginPlay();
+
+    RotationSpeed = 300.f;
+    RotatingMovementComponent->RotationRate = FRotator(0.f, RotationSpeed, 0.f);
+}
+
+void ASXTorch::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+
+    //AddActorWorldRotation(FRotator(0.f, RotationSpeed * DeltaSeconds, 0.f));
 }
