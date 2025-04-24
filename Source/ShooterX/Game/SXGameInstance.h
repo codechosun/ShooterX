@@ -4,7 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Engine/DataTable.h"
 #include "SXGameInstance.generated.h"
+
+USTRUCT(BlueprintType)
+struct FSXMaxHPTableRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	FSXMaxHPTableRow()
+	{
+
+	}
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float MaxHP;
+
+};
 
 /**
  *
@@ -15,14 +33,16 @@ class SHOOTERX_API USXGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	USXGameInstance();
-
 	virtual void Init() override;
 
 	virtual void Shutdown() override;
 
-protected:
-	UPROPERTY()
-	FString Name;
+	UDataTable* GetMaxHPDataTable() const { return MaxHPDataTable; }
+
+	FSXMaxHPTableRow* GetMaxHPDataTableRow(int32 InLevel);
+
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
+	TObjectPtr<UDataTable> MaxHPDataTable;
 
 };
