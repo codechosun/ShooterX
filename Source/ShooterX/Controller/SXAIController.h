@@ -17,6 +17,8 @@ class SHOOTERX_API ASXAIController : public AAIController
 {
 	GENERATED_BODY()
 
+	friend class ASXNonPlayerCharacter;
+
 public:
 	ASXAIController();
 

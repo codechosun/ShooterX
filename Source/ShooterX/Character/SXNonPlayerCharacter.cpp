@@ -32,6 +32,22 @@ void ASXNonPlayerCharacter::BeginPlay()
 	}
 }
 
+float ASXNonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float FinalDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (CurrentHP < KINDA_SMALL_NUMBER)
+	{
+		ASXAIController* AIController = Cast<ASXAIController>(GetController());
+		if (IsValid(AIController) == true)
+		{
+			AIController->EndAI();
+		}
+	}
+
+	return FinalDamageAmount;
+}
+
 void ASXNonPlayerCharacter::BeginAttack()
 {
 	USXAnimInstance* AnimInstance = Cast<USXAnimInstance>(GetMesh()->GetAnimInstance());
