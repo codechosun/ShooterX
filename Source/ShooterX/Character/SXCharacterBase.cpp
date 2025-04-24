@@ -9,6 +9,8 @@
 #include "Animation/SXAnimInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "ShooterX.h"
+#include "Engine/EngineTypes.h"
+#include "Engine/DamageEvents.h"
 
 int32 ASXCharacterBase::ShowAttackMeleeDebug = 0;
 
@@ -38,11 +40,19 @@ ASXCharacterBase::ASXCharacterBase()
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+
+	bIsDead = false;
 }
 
 void ASXCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	USXAnimInstance* AnimInstance = Cast<USXAnimInstance>(GetMesh()->GetAnimInstance());
+	if (IsValid(AnimInstance) == true)
+	{
+		AnimInstance->OnPostDead.AddDynamic(this, &ThisClass::HandleOnPostCharacterDead);
+	}
 }
 
 void ASXCharacterBase::HandleOnCheckHit()
@@ -70,6 +80,9 @@ void ASXCharacterBase::HandleOnCheckHit()
 			{
 				if (IsValid(HitResult.GetActor()) == true)
 				{
+					FDamageEvent DamageEvent;
+					HitResult.GetActor()->TakeDamage(10.f, DamageEvent, GetController(), this);
+
 					//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Hit Actor Name: %s"), *HitResult.GetActor()->GetName()));
 					if (1 == ShowAttackMeleeDebug)
 					{
@@ -153,4 +166,32 @@ void ASXCharacterBase::EndAttack(UAnimMontage* InMontage, bool bInterruped)
 	{
 		OnMeleeAttackMontageEndedDelegate.Unbind();
 	}
+}
+
+float ASXCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float FinalDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	CurrentHP = FMath::Clamp(CurrentHP - FinalDamageAmount, 0.f, MaxHP);
+
+	if (CurrentHP < KINDA_SMALL_NUMBER)
+	{
+		bIsDead = true;
+		CurrentHP = 0.f;
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+
+	if (1 == ShowAttackMeleeDebug)
+	{
+		//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s was taken damage: %.3f"), *GetName(), FinalDamageAmount));		
+		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f / %.1f]"), *GetName(), CurrentHP, MaxHP));
+	}
+
+	return FinalDamageAmount;
+}
+
+void ASXCharacterBase::HandleOnPostCharacterDead()
+{
+	SetLifeSpan(0.1f);
 }
