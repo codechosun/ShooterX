@@ -6,6 +6,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/SXAnimInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Animation/SXAnimInstance.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 ASXCharacterBase::ASXCharacterBase()
 {
@@ -25,4 +27,67 @@ ASXCharacterBase::ASXCharacterBase()
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+}
+
+void ASXCharacterBase::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void ASXCharacterBase::HandleOnCheckHit()
+{
+	UKismetSystemLibrary::PrintString(this, TEXT("HandleOnCheckHit()"));
+}
+
+void ASXCharacterBase::HandleOnCheckInputAttack()
+{
+	//UKismetSystemLibrary::PrintString(this, TEXT("HandleOnCheckInputAttack()"));
+
+	USXAnimInstance* AnimInstance = Cast<USXAnimInstance>(GetMesh()->GetAnimInstance());
+	checkf(IsValid(AnimInstance) == true, TEXT("Invalid AnimInstance"));
+
+	if (bIsAttackKeyPressed == true)
+	{
+		CurrentComboCount = FMath::Clamp(CurrentComboCount + 1, 1, MaxComboCount);
+
+		FName NextSectionName = *FString::Printf(TEXT("%s%02d"), *AttackAnimMontageSectionPrefix, CurrentComboCount);
+		AnimInstance->Montage_JumpToSection(NextSectionName, AttackMeleeMontage);
+		bIsAttackKeyPressed = false;
+	}
+}
+
+void ASXCharacterBase::BeginAttack()
+{
+	USXAnimInstance* AnimInstance = Cast<USXAnimInstance>(GetMesh()->GetAnimInstance());
+	checkf(IsValid(AnimInstance) == true, TEXT("Invalid AnimInstance"));
+
+	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	bIsNowAttacking = true;
+	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false)
+	{
+		AnimInstance->Montage_Play(AttackMeleeMontage);
+	}
+
+	CurrentComboCount = 1;
+
+	if (OnMeleeAttackMontageEndedDelegate.IsBound() == false)
+	{
+		OnMeleeAttackMontageEndedDelegate.BindUObject(this, &ThisClass::EndAttack);
+		AnimInstance->Montage_SetEndDelegate(OnMeleeAttackMontageEndedDelegate, AttackMeleeMontage);
+	}
+}
+
+void ASXCharacterBase::EndAttack(UAnimMontage* InMontage, bool bInterruped)
+{
+	ensureMsgf(CurrentComboCount != 0, TEXT("CurrentComboCount == 0"));
+
+	CurrentComboCount = 0;
+	bIsAttackKeyPressed = false;
+	bIsNowAttacking = false;
+	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	if (OnMeleeAttackMontageEndedDelegate.IsBound() == true)
+	{
+		OnMeleeAttackMontageEndedDelegate.Unbind();
+	}
 }
