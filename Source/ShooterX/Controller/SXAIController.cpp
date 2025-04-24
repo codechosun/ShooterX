@@ -14,6 +14,7 @@ const float ASXAIController::PatrolRadius(500.f);
 int32 ASXAIController::ShowAIDebug(0);
 const FName ASXAIController::StartPatrolPositionKey(TEXT("StartPatrolPosition"));
 const FName ASXAIController::EndPatrolPositionKey(TEXT("EndPatrolPosition"));
+const FName ASXAIController::TargetCharacterKey(TEXT("TargetCharacter"));
 
 FAutoConsoleVariableRef CVarShowAIDebug(
 	TEXT("NXProject.ShowAIDebug"),

@@ -38,6 +38,8 @@ public:
 
 	static const FName EndPatrolPositionKey;
 
+	static const FName TargetCharacterKey;
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<UBlackboardData> BlackboardDataAsset;
