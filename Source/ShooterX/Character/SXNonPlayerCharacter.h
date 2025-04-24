@@ -17,4 +17,6 @@ class SHOOTERX_API ASXNonPlayerCharacter : public ASXCharacterBase
 public:
 	ASXNonPlayerCharacter();
 
+	virtual void BeginPlay() override;
+
 };
