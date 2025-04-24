@@ -34,6 +34,10 @@ public:
 
 	static int32 ShowAIDebug;
 
+	static const FName StartPatrolPositionKey;
+
+	static const FName EndPatrolPositionKey;
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<UBlackboardData> BlackboardDataAsset;

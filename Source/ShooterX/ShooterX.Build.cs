@@ -20,7 +20,7 @@ public class ShooterX : ModuleRules
 				"EnhancedInput",
 
 				// AI
-				"AIModule", "NavigationSystem",
+				"AIModule", "NavigationSystem", "GameplayTasks",
 			}
 		);
 
