@@ -21,6 +21,9 @@ public class ShooterX : ModuleRules
 
 				// AI
 				"AIModule", "NavigationSystem", "GameplayTasks",
+
+				// UI
+				"UMG",
 			}
 		);
 

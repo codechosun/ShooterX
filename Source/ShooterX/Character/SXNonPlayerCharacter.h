@@ -8,6 +8,9 @@
 
 DECLARE_DELEGATE_TwoParams(FOnAttackMontageEnded, UAnimMontage*, bool /*bInterrupted*/)
 
+class USXHPTextWidgetComponent;
+class UUW_HPText;
+
 /**
  *
  */
@@ -25,6 +28,10 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
+	virtual void SetHPTextWidget(UUW_HPText* InHPTextWidget);
+
 protected:
 	virtual void BeginAttack();
 
@@ -36,5 +43,8 @@ public:
 protected:
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
 	// 애니메이션 몽타주 재생이 끝났을 때 호출할 델리게이트.
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<USXHPTextWidgetComponent> HPTextWidgetComponent;
 
 };
