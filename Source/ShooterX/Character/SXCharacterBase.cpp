@@ -12,6 +12,7 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
 #include "Component/SXStatusComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 
 int32 ASXCharacterBase::ShowAttackMeleeDebug = 0;
 
@@ -43,6 +44,10 @@ ASXCharacterBase::ASXCharacterBase()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
 	StatusComponent = CreateDefaultSubobject<USXStatusComponent>(TEXT("StatusComponent"));
+
+	ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
+	ParticleSystemComponent->SetupAttachment(RootComponent);
+	ParticleSystemComponent->SetAutoActivate(false);
 }
 
 void ASXCharacterBase::BeginPlay()

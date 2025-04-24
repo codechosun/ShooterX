@@ -11,6 +11,8 @@
 #include "Component/SXHPTextWidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Character/SXPlayerCharacter.h"
+#include "Game/SXPlayerState.h"
 
 ASXNonPlayerCharacter::ASXNonPlayerCharacter()
 	: bIsNowAttacking(false)
@@ -44,6 +46,8 @@ void ASXNonPlayerCharacter::BeginPlay()
 
 		GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	}
+
+	GetStatusComponent()->SetCurrentHP(30.f);
 }
 
 float ASXNonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -56,6 +60,16 @@ float ASXNonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& 
 		if (IsValid(AIController) == true)
 		{
 			AIController->EndAI();
+		}
+
+		ASXPlayerCharacter* DamageCauserCharacter = Cast<ASXPlayerCharacter>(DamageCauser);
+		if (IsValid(DamageCauserCharacter) == true)
+		{
+			ASXPlayerState* SPlayerState = Cast<ASXPlayerState>(DamageCauserCharacter->GetPlayerState());
+			if (IsValid(SPlayerState) == true)
+			{
+				SPlayerState->AddCurrentKillCount(1);
+			}
 		}
 	}
 
