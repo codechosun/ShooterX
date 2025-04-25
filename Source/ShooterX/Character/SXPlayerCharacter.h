@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class USXInputConfig;
 class UInputMappingContext;
+struct FStreamableHandle;
 
 /**
  *
@@ -54,6 +55,17 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
 	TObjectPtr<UInputMappingContext> PlayerCharacterInputMappingContext;
+
+#pragma endregion
+
+#pragma region MeshMaterial
+
+protected:
+	FSoftObjectPath CurrentPlayerCharacterMeshMaterialPath01 = FSoftObjectPath();
+
+	FSoftObjectPath CurrentPlayerCharacterMeshMaterialPath02 = FSoftObjectPath();
+
+	TSharedPtr<FStreamableHandle> AssetStreamableHandle = nullptr;
 
 #pragma endregion
 

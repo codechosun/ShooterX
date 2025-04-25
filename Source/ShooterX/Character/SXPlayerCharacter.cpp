@@ -10,6 +10,9 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/SXAnimInstance.h"
+#include "ShooterXPlayGround/SXPlayerCharacterMaterialManager.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 
 ASXPlayerCharacter::ASXPlayerCharacter()
 {
@@ -52,6 +55,26 @@ void ASXPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(PlayerCharacterInputMappingContext, 0);
 		}
 	}
+
+	const USXPlayerCharacterMaterialManager* CDO = GetDefault<USXPlayerCharacterMaterialManager>();
+	int32 RandomIndex = FMath::RandRange(0, (CDO->PlayerCharacterMeshMaterialPaths.Num() / 2) - 1);
+	CurrentPlayerCharacterMeshMaterialPath01 = CDO->PlayerCharacterMeshMaterialPaths[RandomIndex];
+	CurrentPlayerCharacterMeshMaterialPath02 = CDO->PlayerCharacterMeshMaterialPaths[RandomIndex + 1];
+	AssetStreamableHandle = UAssetManager::GetStreamableManager().RequestAsyncLoad(
+		{ CurrentPlayerCharacterMeshMaterialPath01, CurrentPlayerCharacterMeshMaterialPath02 },
+		FStreamableDelegate::CreateLambda([this]() -> void
+			{
+				AssetStreamableHandle->ReleaseHandle();
+				TSoftObjectPtr<UMaterialInstance> LoadedMaterialInstance01(CurrentPlayerCharacterMeshMaterialPath01);
+				TSoftObjectPtr<UMaterialInstance> LoadedMaterialInstance02(CurrentPlayerCharacterMeshMaterialPath02);
+				if (LoadedMaterialInstance01.IsValid() == true && LoadedMaterialInstance02.IsValid() == true)
+				{
+					GetMesh()->SetMaterial(1, LoadedMaterialInstance01.Get());
+					GetMesh()->SetMaterial(0, LoadedMaterialInstance02.Get());
+				}
+			}
+		)
+	);
 }
 
 void ASXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
