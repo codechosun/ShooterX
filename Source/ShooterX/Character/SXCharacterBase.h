@@ -49,6 +49,8 @@ public:
 	UPROPERTY()
 	TObjectPtr<ASXWeapon> CurrentWeapon;
 
+	static int32 ShowAttackRangedDebug;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UAnimMontage> AttackMeleeMontage;

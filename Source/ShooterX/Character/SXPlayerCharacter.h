@@ -29,6 +29,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
 protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
@@ -51,6 +53,18 @@ private:
 	void InputAttackMelee(const FInputActionValue& InValue);
 
 	void InputAttackRanged(const FInputActionValue& InValue);
+
+	void TryFire();
+
+	void InputToggleSelector(const FInputActionValue& InValue);
+
+	void InputStartFullAutoFire(const FInputActionValue& InValue);
+
+	void InputStopFullAutoFire(const FInputActionValue& InValue);
+
+	void InputStartIronSight(const FInputActionValue& InValue);
+
+	void InputEndIronSight(const FInputActionValue& InValue);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
@@ -79,5 +93,28 @@ public:
 	TSubclassOf<UCameraShakeBase> AttackRangedCameraShake;
 
 #pragma endregion 
+
+#pragma region Selector
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float FirePerMinute = 600;
+
+	bool bIsFullAutoFire = false;
+
+	FTimerHandle FullAutoTimerHandle;
+
+	float TimeBetweenFire;
+
+#pragma endregion
+
+#pragma region IronSight
+
+protected:
+	float TargetFOV = 70.f;
+
+	float CurrentFOV = 70.f;
+
+#pragma endregion
 
 };

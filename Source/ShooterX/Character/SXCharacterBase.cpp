@@ -24,6 +24,15 @@ FAutoConsoleVariableRef CVarShowAttackMeleeDebug(
 	ECVF_Cheat
 );
 
+int32 ASXCharacterBase::ShowAttackRangedDebug = 0;
+
+FAutoConsoleVariableRef CVarShowAttackRangedDebug(
+	TEXT("SX.ShowAttackRangedDebug"),
+	ASXCharacterBase::ShowAttackRangedDebug,
+	TEXT(""),
+	ECVF_Cheat
+);
+
 ASXCharacterBase::ASXCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
