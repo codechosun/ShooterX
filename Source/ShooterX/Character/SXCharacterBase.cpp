@@ -71,6 +71,25 @@ void ASXCharacterBase::BeginPlay()
 	}
 }
 
+void ASXCharacterBase::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (true == bIsNowRagdollBlending)
+	{
+		CurrentRagDollBlendWeight = FMath::FInterpTo(CurrentRagDollBlendWeight, TargetRagDollBlendWeight, DeltaSeconds, 10.f);
+
+		FName PivotBoneName = FName(TEXT("spine_01"));
+		GetMesh()->SetAllBodiesBelowPhysicsBlendWeight(PivotBoneName, CurrentRagDollBlendWeight);
+
+		if (CurrentRagDollBlendWeight - TargetRagDollBlendWeight < KINDA_SMALL_NUMBER)
+		{
+			GetMesh()->SetAllBodiesBelowSimulatePhysics(PivotBoneName, false);
+			bIsNowRagdollBlending = false;
+		}
+	}
+}
+
 void ASXCharacterBase::HandleOnCheckHit()
 {
 	//UKismetSystemLibrary::PrintString(this, TEXT("HandleOnCheckHit()"));
@@ -195,6 +214,17 @@ float ASXCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	}
+	else
+	{
+		FName PivotBoneName = FName(TEXT("spine_01"));
+		GetMesh()->SetAllBodiesBelowSimulatePhysics(PivotBoneName, true);
+		//float BlendWeight = 1.f;
+		//GetMesh()->SetAllBodiesBelowPhysicsBlendWeight(PivotBoneName, BlendWeight);
+		TargetRagDollBlendWeight = 1.f;
+
+		HittedRagdollRestoreTimerDelegate.BindUObject(this, &ThisClass::OnHittedRagdollRestoreTimerElapsed);
+		GetWorld()->GetTimerManager().SetTimer(HittedRagdollRestoreTimer, HittedRagdollRestoreTimerDelegate, 1.f, false);
+	}
 
 	if (1 == ShowAttackMeleeDebug)
 	{
@@ -216,4 +246,15 @@ UAnimMontage* ASXCharacterBase::GetCurrentWeaponAttackAnimMontage() const
 void ASXCharacterBase::HandleOnPostCharacterDead()
 {
 	SetLifeSpan(0.1f);
+}
+
+void ASXCharacterBase::OnHittedRagdollRestoreTimerElapsed()
+{
+	FName PivotBoneName = FName(TEXT("spine_01"));
+	//GetMesh()->SetAllBodiesBelowSimulatePhysics(PivotBoneName, false);
+	//float BlendWeight = 0.f;
+	//GetMesh()->SetAllBodiesBelowPhysicsBlendWeight(PivotBoneName, BlendWeight);
+	TargetRagDollBlendWeight = 0.f;
+	CurrentRagDollBlendWeight = 1.f;
+	bIsNowRagdollBlending = true;
 }
