@@ -13,6 +13,7 @@
 #include "Engine/DamageEvents.h"
 #include "Component/SXStatusComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Item/SXWeapon.h"
 
 int32 ASXCharacterBase::ShowAttackMeleeDebug = 0;
 
@@ -192,6 +193,15 @@ float ASXCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	}
 
 	return FinalDamageAmount;
+}
+
+UAnimMontage* ASXCharacterBase::GetCurrentWeaponAttackAnimMontage() const
+{
+	if (IsValid(CurrentWeapon) == true)
+	{
+		return CurrentWeapon->GetAttackMontage();
+	}
+	return nullptr;
 }
 
 void ASXCharacterBase::HandleOnPostCharacterDead()

@@ -13,6 +13,7 @@
 #include "ShooterXPlayGround/SXPlayerCharacterMaterialManager.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
+#include "Item/SXWeapon.h"
 
 ASXPlayerCharacter::ASXPlayerCharacter()
 {
@@ -89,6 +90,7 @@ void ASXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(PlayerCharacterInputConfig->Jump, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(PlayerCharacterInputConfig->Jump, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(PlayerCharacterInputConfig->AttackMelee, ETriggerEvent::Started, this, &ThisClass::InputAttackMelee);
+		EnhancedInputComponent->BindAction(PlayerCharacterInputConfig->AttackRanged, ETriggerEvent::Started, this, &ThisClass::InputAttackRanged);
 	}
 }
 
@@ -129,6 +131,39 @@ void ASXPlayerCharacter::InputAttackMelee(const FInputActionValue& InValue)
 	{
 		ensure(FMath::IsWithinInclusive<int32>(CurrentComboCount, 1, MaxComboCount));
 		bIsAttackKeyPressed = true;
+	}
+}
+
+void ASXPlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
+{
+	if (0.f < GetCharacterMovement()->Velocity.Size())
+	{
+		return;
+	}
+
+	if (IsValid(CurrentWeapon) == false)
+	{
+		return;
+	}
+
+	if (IsValid(GetCurrentWeaponAttackAnimMontage()) == false)
+	{
+		return;
+	}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (IsValid(AnimInstance) == true)
+	{
+		if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()) == false)
+		{
+			AnimInstance->Montage_Play(GetCurrentWeaponAttackAnimMontage());
+		}
+	}
+
+	APlayerController* OwnerPlayerController = Cast<APlayerController>(GetController());
+	if (IsValid(AttackRangedCameraShake) == true && IsValid(OwnerPlayerController) == true)
+	{
+		OwnerPlayerController->ClientStartCameraShake(AttackRangedCameraShake);
 	}
 }
 

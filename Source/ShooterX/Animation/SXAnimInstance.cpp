@@ -16,6 +16,8 @@ void USXAnimInstance::NativeInitializeAnimation()
 		OwnerCharacter = Cast<ASXCharacterBase>(OwnerPawn);
 		OwnerCharacterMovement = OwnerCharacter->GetCharacterMovement();
 	}
+
+	bIsUnarmed = true;
 }
 
 void USXAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -36,6 +38,13 @@ void USXAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		if (IsValid(OwnerCharacter->GetStatusComponent()) == true)
 		{
 			bIsDead = OwnerCharacter->GetStatusComponent()->IsDead();
+		}
+
+		bIsUnarmed = OwnerCharacter->GetCurrentWeaponAttackAnimMontage() == nullptr ? true : false;
+
+		if (APlayerController* OwnerPlayerController = Cast<APlayerController>(OwnerCharacter->GetController()))
+		{
+			NormalizedCurrentPitch = UKismetMathLibrary::NormalizeAxis(OwnerPlayerController->GetControlRotation().Pitch);
 		}
 	}
 }

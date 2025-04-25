@@ -8,6 +8,7 @@
 
 class ASXPlayerCharacter;
 class USXPickupComponent;
+class UAnimMontage;
 
 UCLASS()
 class SHOOTERX_API ASXWeapon : public AActor
@@ -19,6 +20,8 @@ public:
 
 	USXPickupComponent* GetPickupComponent() const { return PickupComponent; }
 
+	UAnimMontage* GetAttackMontage() const { return AttackMontage; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -28,5 +31,8 @@ protected:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<USXPickupComponent> PickupComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> AttackMontage;
 
 };

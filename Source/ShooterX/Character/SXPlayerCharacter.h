@@ -12,6 +12,7 @@ class UCameraComponent;
 class USXInputConfig;
 class UInputMappingContext;
 struct FStreamableHandle;
+class UCameraShakeBase;
 
 /**
  *
@@ -49,6 +50,8 @@ private:
 
 	void InputAttackMelee(const FInputActionValue& InValue);
 
+	void InputAttackRanged(const FInputActionValue& InValue);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
 	TObjectPtr<USXInputConfig> PlayerCharacterInputConfig;
@@ -68,5 +71,13 @@ protected:
 	TSharedPtr<FStreamableHandle> AssetStreamableHandle = nullptr;
 
 #pragma endregion
+
+#pragma region Effect
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UCameraShakeBase> AttackRangedCameraShake;
+
+#pragma endregion 
 
 };
