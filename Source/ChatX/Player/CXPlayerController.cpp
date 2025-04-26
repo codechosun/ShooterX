@@ -6,6 +6,7 @@
 #include "UI/CXChatInput.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "ChatX.h"
+#include "EngineUtils.h"
 
 void ACXPlayerController::BeginPlay()
 {
@@ -33,10 +34,30 @@ void ACXPlayerController::SetChatMessageString(const FString& InChatMessageStrin
 {
 	ChatMessageString = InChatMessageString;
 
-	PrintChatMessageString(ChatMessageString);
+	if (IsLocalController() == true)
+	{
+		ServerRPCPrintChatMessageString(InChatMessageString);
+	}
 }
 
 void ACXPlayerController::PrintChatMessageString(const FString& InChatMessageString)
 {
 	ChatXFunctionLibrary::MyPrintString(this, InChatMessageString, 10.f);
+}
+
+void ACXPlayerController::ClientRPCPrintChatMessageString_Implementation(const FString& InChatMessageString)
+{
+	PrintChatMessageString(InChatMessageString);
+}
+
+void ACXPlayerController::ServerRPCPrintChatMessageString_Implementation(const FString& InChatMessageString)
+{
+	for (TActorIterator<ACXPlayerController> It(GetWorld()); It; ++It)
+	{
+		ACXPlayerController* CXPlayerController = *It;
+		if (IsValid(CXPlayerController) == true)
+		{
+			CXPlayerController->ClientRPCPrintChatMessageString(InChatMessageString);
+		}
+	}
 }
