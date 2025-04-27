@@ -7,6 +7,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "ChatX.h"
 #include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "Game/CXGameModeBase.h"
 
 void ACXPlayerController::BeginPlay()
 {
@@ -52,12 +54,13 @@ void ACXPlayerController::ClientRPCPrintChatMessageString_Implementation(const F
 
 void ACXPlayerController::ServerRPCPrintChatMessageString_Implementation(const FString& InChatMessageString)
 {
-	for (TActorIterator<ACXPlayerController> It(GetWorld()); It; ++It)
+	AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
+	if (IsValid(GM) == true)
 	{
-		ACXPlayerController* CXPlayerController = *It;
-		if (IsValid(CXPlayerController) == true)
+		ACXGameModeBase* CXGM = Cast<ACXGameModeBase>(GM);
+		if (IsValid(CXGM) == true)
 		{
-			CXPlayerController->ClientRPCPrintChatMessageString(InChatMessageString);
+			CXGM->PrintChatMessageString(this, InChatMessageString);
 		}
 	}
 }
