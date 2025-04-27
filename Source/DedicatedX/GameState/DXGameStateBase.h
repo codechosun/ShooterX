@@ -6,11 +6,11 @@
 #include "DXGameStateBase.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class DEDICATEDX_API ADXGameStateBase : public AGameStateBase
 {
 	GENERATED_BODY()
-	
+
 };

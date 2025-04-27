@@ -8,6 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
+#include "DedicatedX.h"
 
 ADXPlayerCharacter::ADXPlayerCharacter()
 {
