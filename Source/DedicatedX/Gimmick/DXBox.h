@@ -7,6 +7,7 @@
 
 class USceneComponent;
 class UStaticMeshComponent;
+class UPointLightComponent;
 
 UCLASS()
 class DEDICATEDX_API ADXBox : public AActor
@@ -28,6 +29,9 @@ private:
 	UFUNCTION()
 	void OnRep_ServerRotationYaw();
 
+	UFUNCTION()
+	void OnRep_ServerLightColor();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<USceneComponent> SceneRoot;
@@ -45,5 +49,11 @@ protected:
 	float AccDeltaSecondSinceReplicated;
 
 	float NetCullDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UPointLightComponent> PointLight;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ServerLightColor)
+	FLinearColor ServerLightColor;
 
 };

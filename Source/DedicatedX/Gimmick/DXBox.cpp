@@ -5,6 +5,7 @@
 
 #include "DedicatedX.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/PointLightComponent.h"
 
 
 ADXBox::ADXBox()
@@ -30,6 +31,9 @@ ADXBox::ADXBox()
 	// 주기 = 1/주파수
 
 	SetNetCullDistanceSquared(NetCullDistance * NetCullDistance);
+
+	PointLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("PointLight"));
+	PointLight->SetupAttachment(SceneRoot);
 }
 
 void ADXBox::BeginPlay()
@@ -37,6 +41,22 @@ void ADXBox::BeginPlay()
 	Super::BeginPlay();
 
 	DX_LOG_ROLE(LogDXNet, Log, TEXT(""));
+
+	if (HasAuthority() == true)
+	{
+		FTimerHandle TimerHandle01;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle01, FTimerDelegate::CreateLambda(
+			[&]() -> void
+			{
+				float RandomR = FMath::RandRange(0.f, 1.f);
+				float RandomG = FMath::RandRange(0.f, 1.f);
+				float RandomB = FMath::RandRange(0.f, 1.f);
+				ServerLightColor = FLinearColor(RandomR, RandomG, RandomB, 1.f);
+				OnRep_ServerLightColor();
+				// 서버에서도 로직이 수행될 수 있게끔 OnRep_() 함수를 명시적으로 호출.
+			}), 1.f, true
+		);
+	}
 }
 
 
@@ -45,6 +65,7 @@ void ADXBox::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ThisClass, ServerRotationYaw);
+	DOREPLIFETIME_CONDITION(ThisClass, ServerLightColor, COND_InitialOnly);
 }
 
 void ADXBox::Tick(float DeltaSeconds)
@@ -73,7 +94,6 @@ void ADXBox::Tick(float DeltaSeconds)
 	}
 
 	DrawDebugSphere(GetWorld(), GetActorLocation(), NetCullDistance / 2.f, 16, FColor::Green, false, -1.f);
-	// NetCullDistanceSquared를 시각화 하기 위한 디버그 드로잉
 }
 
 bool ADXBox::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
@@ -98,3 +118,14 @@ void ADXBox::OnRep_ServerRotationYaw()
 
 	AccDeltaSecondSinceReplicated = 0.f;
 }
+
+void ADXBox::OnRep_ServerLightColor()
+{
+	if (HasAuthority() == false)
+	{
+		DX_LOG_NET(LogDXNet, Log, TEXT("OnRep_ServerLightColor(): %s"), *ServerLightColor.ToString());
+	}
+
+	PointLight->SetLightColor(ServerLightColor);
+}
+
