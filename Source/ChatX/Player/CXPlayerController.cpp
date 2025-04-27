@@ -9,6 +9,13 @@
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "Game/CXGameModeBase.h"
+#include "CXPlayerState.h"
+#include "Net/UnrealNetwork.h"
+
+ACXPlayerController::ACXPlayerController()
+{
+	bReplicates = true;
+}
 
 void ACXPlayerController::BeginPlay()
 {
@@ -30,6 +37,15 @@ void ACXPlayerController::BeginPlay()
 			ChatInputWidgetInstance->AddToViewport();
 		}
 	}
+
+	if (IsValid(NotificationTextWidgetClass) == true)
+	{
+		NotificationTextWidgetInstance = CreateWidget<UUserWidget>(this, NotificationTextWidgetClass);
+		if (IsValid(NotificationTextWidgetInstance) == true)
+		{
+			NotificationTextWidgetInstance->AddToViewport();
+		}
+	}
 }
 
 void ACXPlayerController::SetChatMessageString(const FString& InChatMessageString)
@@ -38,7 +54,13 @@ void ACXPlayerController::SetChatMessageString(const FString& InChatMessageStrin
 
 	if (IsLocalController() == true)
 	{
-		ServerRPCPrintChatMessageString(InChatMessageString);
+		ACXPlayerState* CXPS = GetPlayerState<ACXPlayerState>();
+		if (IsValid(CXPS) == true)
+		{
+			FString CombinedMessageString = CXPS->GetPlayerInfoString() + TEXT(": ") + InChatMessageString;
+
+			ServerRPCPrintChatMessageString(CombinedMessageString);
+		}
 	}
 }
 
@@ -63,4 +85,11 @@ void ACXPlayerController::ServerRPCPrintChatMessageString_Implementation(const F
 			CXGM->PrintChatMessageString(this, InChatMessageString);
 		}
 	}
+}
+
+void ACXPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, NotificationText);
 }
