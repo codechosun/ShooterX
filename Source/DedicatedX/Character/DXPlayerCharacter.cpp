@@ -9,6 +9,8 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "DedicatedX.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Gimmick/DXLandMine.h"
 
 ADXPlayerCharacter::ADXPlayerCharacter()
 {
@@ -44,6 +46,8 @@ void ADXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	
 	EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 	EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+	EIC->BindAction(LandMineAction, ETriggerEvent::Started, this, &ThisClass::HandleLandMineInput);
 }
 
 void ADXPlayerCharacter::BeginPlay()
@@ -95,4 +99,15 @@ void ADXPlayerCharacter::HandleLookInput(const FInputActionValue& InValue)
 	AddControllerYawInput(InLookVector.X);
 	AddControllerPitchInput(InLookVector.Y);
 }
+
+void ADXPlayerCharacter::HandleLandMineInput(const FInputActionValue& InValue)
+{
+	if (IsValid(LandMineClass) == true)
+	{
+		FVector SpawnedLocation = (GetActorLocation() + GetActorForwardVector() * 300.f) - FVector(0.f, 0.f, 90.f);
+		ADXLandMine* SpawnedLandMine = GetWorld()->SpawnActor<ADXLandMine>(LandMineClass, SpawnedLocation, FRotator::ZeroRotator);
+		SpawnedLandMine->SetOwner(GetController());
+	}
+}
+
 

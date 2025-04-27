@@ -49,6 +49,8 @@ private:
 	void HandleMoveInput(const FInputActionValue& InValue);
 
 	void HandleLookInput(const FInputActionValue& InValue);
+
+	void HandleLandMineInput(const FInputActionValue& InValue);
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DXPlayerCharacter|Input")
@@ -62,7 +64,18 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DXPlayerCharacter|Input")
 	TObjectPtr<UInputAction> JumpAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DXPlayerCharacter|Input")
+	TObjectPtr<UInputAction> LandMineAction;
 	
+#pragma endregion
+
+#pragma region LandMine
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AActor> LandMineClass;
+
 #pragma endregion
 	
 };
