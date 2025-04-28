@@ -6,8 +6,11 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Net/UnrealNetwork.h"
 
 ADXLandMine::ADXLandMine()
+	: bIsExploded(false)
+	, NetCullDistance(1000.f)
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
@@ -24,6 +27,8 @@ ADXLandMine::ADXLandMine()
 	Particle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Particle"));
 	Particle->SetupAttachment(GetRootComponent());
 	Particle->SetAutoActivate(false);
+
+	SetNetCullDistanceSquared(NetCullDistance * NetCullDistance);
 }
 
 void ADXLandMine::BeginPlay()
@@ -75,6 +80,11 @@ void ADXLandMine::OnLandMineBeginOverlap(AActor* OverlappedActor, AActor* OtherA
 		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Run on server.")), true, true, FLinearColor::Green, 5.f);
 
 		MulticastRPCSpawnEffect();
+
+		if (bIsExploded == false)
+		{
+			bIsExploded = true;
+		}
 	}
 	else
 	{
@@ -90,13 +100,30 @@ void ADXLandMine::OnLandMineBeginOverlap(AActor* OverlappedActor, AActor* OtherA
 				UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Run on other client.")), true, true, FLinearColor::Green, 5.f);
 			}
 		}
+
+		if (bIsExploded == false)
+		{
+			Particle->Activate(true);
+		}
+	}
+}
+
+void ADXLandMine::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, bIsExploded);
+}
+
+void ADXLandMine::OnRep_IsExploded()
+{
+	if (true == bIsExploded && IsValid(ExplodedMaterial) == true)
+	{
+		Mesh->SetMaterial(0, ExplodedMaterial);
 	}
 }
 
 void ADXLandMine::MulticastRPCSpawnEffect_Implementation()
 {
-	if (HasAuthority() == false)
-	{
-		Particle->Activate(true);
-	}
+
 }

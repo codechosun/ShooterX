@@ -10,6 +10,7 @@ class USceneComponent;
 class UBoxComponent;
 class UStaticMeshComponent;
 class UParticleSystemComponent;
+class UMaterial;
 
 UCLASS()
 class DEDICATEDX_API ADXLandMine : public AActor
@@ -29,6 +30,11 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCSpawnEffect();
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_IsExploded();
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<USceneComponent> SceneRoot;
@@ -42,4 +48,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<UParticleSystemComponent> Particle;
 
+	UPROPERTY(ReplicatedUsing = OnRep_IsExploded)
+	uint8 bIsExploded : 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
+	float NetCullDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
+	TObjectPtr<UMaterial> ExplodedMaterial;
 };
