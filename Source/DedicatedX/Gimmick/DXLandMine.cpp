@@ -9,6 +9,7 @@
 ADXLandMine::ADXLandMine()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 
 	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
 	SetRootComponent(SceneRoot);
@@ -24,7 +25,25 @@ void ADXLandMine::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ADXLandMine::BeginPlay()")), true, true, FLinearColor::Green, 5.f);
+	if (HasAuthority() == true)
+	{
+		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Run on server.")), true, true, FLinearColor::Green, 5.f);
+	}
+	else
+	{
+		APawn* OwnerPawn = Cast<APawn>(GetOwner());
+		if (IsValid(OwnerPawn) == true)
+		{
+			if (OwnerPawn->IsLocallyControlled() == true)
+			{
+				UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Run on owning client.")), true, true, FLinearColor::Green, 5.f);
+			}
+			else
+			{
+				UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Run on other client.")), true, true, FLinearColor::Green, 5.f);
+			}
+		}
+	}
 }
 
 void ADXLandMine::EndPlay(const EEndPlayReason::Type EndPlayReason)

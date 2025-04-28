@@ -102,12 +102,23 @@ void ADXPlayerCharacter::HandleLookInput(const FInputActionValue& InValue)
 
 void ADXPlayerCharacter::HandleLandMineInput(const FInputActionValue& InValue)
 {
+	if (IsLocallyControlled() == true)
+	{
+		ServerRPCSpawnLandMine();
+	}
+}
+
+void ADXPlayerCharacter::ServerRPCSpawnLandMine_Implementation()
+{
 	if (IsValid(LandMineClass) == true)
 	{
 		FVector SpawnedLocation = (GetActorLocation() + GetActorForwardVector() * 300.f) - FVector(0.f, 0.f, 90.f);
 		ADXLandMine* SpawnedLandMine = GetWorld()->SpawnActor<ADXLandMine>(LandMineClass, SpawnedLocation, FRotator::ZeroRotator);
-		SpawnedLandMine->SetOwner(GetController());
+		SpawnedLandMine->SetOwner(this);
 	}
 }
 
-
+bool ADXPlayerCharacter::ServerRPCSpawnLandMine_Validate()
+{
+	return true;
+}
