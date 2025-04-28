@@ -12,6 +12,9 @@ public class DedicatedX : ModuleRules
 		{
 			// Initial Dependencies
 			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
+
+			// UI
+			"UMG",
 		});
 
 		PublicIncludePaths.AddRange(new string[]
