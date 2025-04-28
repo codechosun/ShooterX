@@ -5,6 +5,7 @@
 
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ADXLandMine::ADXLandMine()
 {
@@ -19,6 +20,10 @@ ADXLandMine::ADXLandMine()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(BoxCollision);
+
+	Particle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Particle"));
+	Particle->SetupAttachment(GetRootComponent());
+	Particle->SetAutoActivate(false);
 }
 
 void ADXLandMine::BeginPlay()
@@ -44,6 +49,11 @@ void ADXLandMine::BeginPlay()
 			}
 		}
 	}
+
+	if (false == OnActorBeginOverlap.IsAlreadyBound(this, &ThisClass::OnLandMineBeginOverlap))
+	{
+		OnActorBeginOverlap.AddDynamic(this, &ThisClass::OnLandMineBeginOverlap);
+	}
 }
 
 void ADXLandMine::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -51,4 +61,42 @@ void ADXLandMine::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 
 	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ADXLandMine::EndPlay()")), true, true, FLinearColor::Green, 5.f);
+
+	if (true == OnActorBeginOverlap.IsAlreadyBound(this, &ThisClass::OnLandMineBeginOverlap))
+	{
+		OnActorBeginOverlap.RemoveDynamic(this, &ThisClass::OnLandMineBeginOverlap);
+	}
+}
+
+void ADXLandMine::OnLandMineBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	if (HasAuthority() == true)
+	{
+		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Run on server.")), true, true, FLinearColor::Green, 5.f);
+
+		MulticastRPCSpawnEffect();
+	}
+	else
+	{
+		APawn* OwnerPawn = Cast<APawn>(GetOwner());
+		if (IsValid(OwnerPawn) == true)
+		{
+			if (OwnerPawn->IsLocallyControlled() == true)
+			{
+				UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Run on owning client.")), true, true, FLinearColor::Green, 5.f);
+			}
+			else
+			{
+				UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Run on other client.")), true, true, FLinearColor::Green, 5.f);
+			}
+		}
+	}
+}
+
+void ADXLandMine::MulticastRPCSpawnEffect_Implementation()
+{
+	if (HasAuthority() == false)
+	{
+		Particle->Activate(true);
+	}
 }

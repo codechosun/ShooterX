@@ -9,6 +9,7 @@
 class USceneComponent;
 class UBoxComponent;
 class UStaticMeshComponent;
+class UParticleSystemComponent;
 
 UCLASS()
 class DEDICATEDX_API ADXLandMine : public AActor
@@ -22,6 +23,12 @@ public:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UFUNCTION()
+	void OnLandMineBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCSpawnEffect();
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<USceneComponent> SceneRoot;
@@ -31,5 +38,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<UStaticMeshComponent> Mesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
+	TObjectPtr<UParticleSystemComponent> Particle;
 
 };
