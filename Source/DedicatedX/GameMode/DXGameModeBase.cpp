@@ -4,10 +4,23 @@
 #include "GameMode/DXGameModeBase.h"
 
 #include "Controller/DXPlayerController.h"
+#include "GameState/DXGameStateBase.h"
 
 void ADXGameModeBase::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+
+	ADXGameStateBase* DXGameState = GetGameState<ADXGameStateBase>();
+	if (IsValid(DXGameState) == false)
+	{
+		return;
+	}
+
+	if (DXGameState->MatchState != EMatchState::Waiting)
+	{
+		NewPlayer->SetLifeSpan(0.1f);
+		return;
+	}
 
 	ADXPlayerController* NewPlayerController = Cast<ADXPlayerController>(NewPlayer);
 	if (IsValid(NewPlayerController) == true)
@@ -27,5 +40,102 @@ void ADXGameModeBase::Logout(AController* Exiting)
 	{
 		AlivePlayerControllers.Remove(ExitingPlayerController);
 		DeadPlayerControllers.Add(ExitingPlayerController);
+	}
+}
+
+void ADXGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GetWorld()->GetTimerManager().SetTimer(MainTimerHandle, this, &ThisClass::OnMainTimerElapsed, 1.f, true);
+
+	RemainWaitingTimeForPlaying = WaitingTime;
+}
+
+void ADXGameModeBase::OnCharacterDead(ADXPlayerController* InController)
+{
+	if (IsValid(InController) == false || AlivePlayerControllers.Find(InController) == INDEX_NONE)
+	{
+		return;
+	}
+
+	AlivePlayerControllers.Remove(InController);
+	DeadPlayerControllers.Add(InController);
+}
+
+void ADXGameModeBase::OnMainTimerElapsed()
+{
+	ADXGameStateBase* DXGameState = GetGameState<ADXGameStateBase>();
+	if (IsValid(DXGameState) == false)
+	{
+		return;
+	}
+
+	switch (DXGameState->MatchState)
+	{
+	case EMatchState::None:
+		break;
+	case EMatchState::Waiting:
+	{
+		FString NotificationString = FString::Printf(TEXT(""));
+
+		if (AlivePlayerControllers.Num() < MinimumPlayerCountForPlaying)
+		{
+			NotificationString = FString::Printf(TEXT("Wait another players for playing."));
+
+			RemainWaitingTimeForPlaying = WaitingTime;
+		}
+		else
+		{
+			NotificationString = FString::Printf(TEXT("Wait %d seconds for playing."), RemainWaitingTimeForPlaying);
+
+			--RemainWaitingTimeForPlaying;
+		}
+
+		if (RemainWaitingTimeForPlaying <= 0)
+		{
+			NotificationString = FString::Printf(TEXT(""));
+
+			DXGameState->MatchState = EMatchState::Playing;
+		}
+
+		NotifyToAllPlayer(NotificationString);
+
+		break;
+	}
+	case EMatchState::Playing:
+	{
+		DXGameState->AlivePlayerControllerCount = AlivePlayerControllers.Num();
+
+		FString NotificationString = FString::Printf(TEXT("%d / %d"), DXGameState->AlivePlayerControllerCount, DXGameState->AlivePlayerControllerCount + DeadPlayerControllers.Num());
+
+		NotifyToAllPlayer(NotificationString);
+
+		if (DXGameState->AlivePlayerControllerCount <= 1)
+		{
+			DXGameState->MatchState = EMatchState::Ending;
+		}
+
+		break;
+	}
+	case EMatchState::Ending:
+		break;
+	case EMatchState::End:
+		break;
+	default:
+		break;
+	}
+}
+
+void ADXGameModeBase::NotifyToAllPlayer(const FString& NotificationString)
+{
+	for (auto AlivePlayerController : AlivePlayerControllers)
+	{
+		AlivePlayerController->NotificationText = FText::FromString(NotificationString);
+	}
+
+	for (auto DeadPlayerController : DeadPlayerControllers)
+	{
+		DeadPlayerController->NotificationText = FText::FromString(NotificationString);
 	}
 }

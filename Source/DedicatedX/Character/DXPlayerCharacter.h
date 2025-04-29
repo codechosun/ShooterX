@@ -119,6 +119,9 @@ public:
 
 	void CheckMeleeAttackHit();
 
+	UFUNCTION()
+	void OnDeath();
+
 private:
 	void DrawDebugMeleeAttack(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward);
 
