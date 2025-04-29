@@ -6,6 +6,7 @@
 #include "DXPlayerController.generated.h"
 
 class UUserWidget;
+class UUW_GameResult;
 
 /**
  *
@@ -22,11 +23,20 @@ public:
 
 	void OnCharacterDead();
 
+	UFUNCTION(Client, Reliable)
+	void ClientRPCShowGameResultWidget(int32 InRanking);
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPCReturnToTitle();
+
 public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	FText NotificationText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> NotificationTextUIClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UUW_GameResult> GameResultUIClass;
 
 };

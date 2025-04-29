@@ -5,6 +5,7 @@
 
 #include "Controller/DXPlayerController.h"
 #include "GameState/DXGameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 
 void ADXGameModeBase::PostLogin(APlayerController* NewPlayer)
 {
@@ -50,6 +51,8 @@ void ADXGameModeBase::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(MainTimerHandle, this, &ThisClass::OnMainTimerElapsed, 1.f, true);
 
 	RemainWaitingTimeForPlaying = WaitingTime;
+
+	RemainWaitingTimeForEnding = EndingTime;
 }
 
 void ADXGameModeBase::OnCharacterDead(ADXPlayerController* InController)
@@ -58,6 +61,8 @@ void ADXGameModeBase::OnCharacterDead(ADXPlayerController* InController)
 	{
 		return;
 	}
+
+	InController->ClientRPCShowGameResultWidget(AlivePlayerControllers.Num());
 
 	AlivePlayerControllers.Remove(InController);
 	DeadPlayerControllers.Add(InController);
@@ -114,12 +119,41 @@ void ADXGameModeBase::OnMainTimerElapsed()
 		if (DXGameState->AlivePlayerControllerCount <= 1)
 		{
 			DXGameState->MatchState = EMatchState::Ending;
+
+			AlivePlayerControllers[0]->ClientRPCShowGameResultWidget(1);
 		}
 
 		break;
 	}
 	case EMatchState::Ending:
+	{
+		FString NotificationString = FString::Printf(TEXT("Waiting %d for returning to title."), RemainWaitingTimeForEnding);
+
+		NotifyToAllPlayer(NotificationString);
+
+		--RemainWaitingTimeForEnding;
+
+		if (RemainWaitingTimeForEnding <= 0)
+		{
+			for (auto AliveController : AlivePlayerControllers)
+			{
+				AliveController->ClientRPCReturnToTitle();
+			}
+			for (auto DeadController : DeadPlayerControllers)
+			{
+				DeadController->ClientRPCReturnToTitle();
+			}
+
+			MainTimerHandle.Invalidate();
+
+			FName CurrentLevelName = FName(UGameplayStatics::GetCurrentLevelName(this));
+			UGameplayStatics::OpenLevel(this, CurrentLevelName, true, FString(TEXT("listen")));
+
+			return;
+		}
+
 		break;
+	}
 	case EMatchState::End:
 		break;
 	default:
